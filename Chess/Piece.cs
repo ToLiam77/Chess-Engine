@@ -540,6 +540,7 @@ namespace Chess
                             MoveList.Add(pieceIndex + SW);
                         }
 
+                        
                         //CASTLING
                         switch (colour)
                         {
@@ -548,23 +549,29 @@ namespace Chess
                                 {
                                     if (!ChessBoard.hasRookMoved_kingside_white)
                                     {
-                                        if (ChessBoard.chessBoard[7, 5] == '0' && ChessBoard.chessBoard[7, 6] == '0')
+                                        if (ChessBoard.chessBoard[7, 5] == '0' && ChessBoard.chessBoard[7, 6] == '0' && ChessBoard.chessBoard[7, 7] == 'R')
                                         {
-                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex))
+                                            ChessBoard.hasKingMoved_white = true;
+                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex) &&
+                                                !getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex + E))
                                             {
                                                 MoveList.Add(6);
                                             }
-                                            
+                                            ChessBoard.hasKingMoved_white = false;
+
                                         }
                                     }
                                     if (!ChessBoard.hasRookMoved_queenside_white)
                                     {
-                                        if (ChessBoard.chessBoard[7, 1] == '0' && ChessBoard.chessBoard[7, 2] == '0' && ChessBoard.chessBoard[7, 3] == '0')
+                                        if (ChessBoard.chessBoard[7, 1] == '0' && ChessBoard.chessBoard[7, 2] == '0' && ChessBoard.chessBoard[7, 3] == '0' && ChessBoard.chessBoard[7, 0] == 'R')
                                         {
-                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex))
+                                            ChessBoard.hasKingMoved_white = true;
+                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex) &&
+                                                !getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex + W))
                                             {
                                                 MoveList.Add(2);
                                             }
+                                            ChessBoard.hasKingMoved_white = false;
 
                                         }
                                     }
@@ -576,29 +583,36 @@ namespace Chess
                                 {
                                     if (!ChessBoard.hasRookMoved_kingside_black)
                                     {
-                                        if (ChessBoard.chessBoard[0, 5] == '0' && ChessBoard.chessBoard[0, 6] == '0')
+                                        if (ChessBoard.chessBoard[0, 5] == '0' && ChessBoard.chessBoard[0, 6] == '0' && ChessBoard.chessBoard[0, 7] == 'r')
                                         {
-                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex))
+                                            ChessBoard.hasKingMoved_black = true;
+                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex) &&
+                                                !getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex + E))
                                             {
                                                 MoveList.Add(62);
                                             }
+                                            ChessBoard.hasKingMoved_black = false;
 
                                         }
                                     }
                                     if (!ChessBoard.hasRookMoved_queenside_black)
                                     {
-                                        if (ChessBoard.chessBoard[0, 1] == '0' && ChessBoard.chessBoard[0, 2] == '0' && ChessBoard.chessBoard[0, 3] == '0')
+                                        if (ChessBoard.chessBoard[0, 1] == '0' && ChessBoard.chessBoard[0, 2] == '0' && ChessBoard.chessBoard[0, 3] == '0' && ChessBoard.chessBoard[0, 0] == 'r')
                                         {
-                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex))
+                                            ChessBoard.hasKingMoved_black = true;
+                                            if (!getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex) &&
+                                                !getAttackedSquares(ChessBoard.getOppositeColor(colour)).Contains(pieceIndex + W))
                                             {
                                                 MoveList.Add(58);
                                             }
+                                            ChessBoard.hasKingMoved_black = false;
 
                                         }
                                     }
                                 }
                                 break;
                         }
+                        
                         
                         #endregion
                         break;
@@ -650,6 +664,7 @@ namespace Chess
 
             ChessBoard.validatingMoves = false;
             return filteredMoveList;
+            //return MoveList;
         }
 
         public static List<int> getAttackedSquares(char color)
@@ -692,6 +707,46 @@ namespace Chess
             for (int i = 0; i < AvailablePieces.Count; i++)
             {
                 AllAvailableMoves.AddRange(AvailableMovesNoFilter(ChessBoard.getPieceAtIndex(AvailablePieces[i]), AvailablePieces[i]));
+
+                //Add pawn attacks too
+                if (ChessBoard.getPieceAtIndex(AvailablePieces[i]) == 'P')
+                {
+                    if (ChessBoard.getFile(AvailablePieces[i]) != 1){
+                        if (ChessBoard.chessBoard[8 - ChessBoard.getRank(AvailablePieces[i] + 7), ChessBoard.getFile(AvailablePieces[i] + 7) - 1] == '0')
+                        {
+                            AllAvailableMoves.Add(AvailablePieces[i] + 7);
+                        }
+                    }
+
+                    if (ChessBoard.getFile(AvailablePieces[i]) != 8)
+                    {
+                        if (ChessBoard.chessBoard[8 - ChessBoard.getRank(AvailablePieces[i] + 9), ChessBoard.getFile(AvailablePieces[i] + 9) - 1] == '0')
+                        {
+                            AllAvailableMoves.Add(AvailablePieces[i] + 9);
+                        }
+                    }
+
+                }
+                else if (ChessBoard.getPieceAtIndex(AvailablePieces[i]) == 'p')
+                {
+                    if (ChessBoard.getFile(AvailablePieces[i]) != 1)
+                    {
+                        if (ChessBoard.chessBoard[8 - ChessBoard.getRank(AvailablePieces[i] - 9), ChessBoard.getFile(AvailablePieces[i] - 9) - 1] == '0')
+                        {
+                            AllAvailableMoves.Add(AvailablePieces[i] - 9);
+                        }
+                    }
+
+                    if (ChessBoard.getFile(AvailablePieces[i]) != 8)
+                    {
+                        if (ChessBoard.chessBoard[8 - ChessBoard.getRank(AvailablePieces[i] - 7), ChessBoard.getFile(AvailablePieces[i] - 7) - 1] == '0')
+                        {
+                            AllAvailableMoves.Add(AvailablePieces[i] - 7);
+                        }
+                    }
+
+                }
+
             }
 
 

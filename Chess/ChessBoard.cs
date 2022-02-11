@@ -74,8 +74,16 @@ namespace Chess
                 //Storing previously moved pawn for En Passant
                 if (Math.Abs(getRank(startingIndex) - getRank(targetIndex)) == 2)
                 {
-                    EnPassantAvailable = true;
-                    pawnToEnPassant = targetIndex;
+                    
+                    if (!validatingMoves)
+                    {
+                        EnPassantAvailable = true;
+                        pawnToEnPassant = targetIndex;
+
+                    }
+
+                    //Debug.WriteLine("targetindex = " + targetIndex);
+                    //Debug.WriteLine("pawn to en passant = " + pawnToEnPassant);
                 }
 
                 //En Passant
@@ -125,7 +133,6 @@ namespace Chess
                     //Castling (white)
                     if (Math.Abs(startingIndex - targetIndex) == 2)
                     {
-                        Debug.Write("test");
                         if (targetIndex > startingIndex)
                         {
                             chessBoard[7, 7] = '0';
@@ -418,6 +425,11 @@ namespace Chess
 
 
             //Castling permissions
+            hasRookMoved_kingside_white = true;
+            hasRookMoved_queenside_white = true;
+            hasRookMoved_kingside_black = true;
+            hasRookMoved_queenside_black = true;
+
             if (FenSubsections[2] == "-")
             {
                 hasKingMoved_white = true;
@@ -425,26 +437,27 @@ namespace Chess
             }
             else
             {
-                if (!FenSubsections[2].Contains("K"))
+                if (FenSubsections[2].Contains("K"))
                 {
-                    hasRookMoved_kingside_white = true;
+                    hasRookMoved_kingside_white = false;
                 }
 
-                if (!FenSubsections[2].Contains("Q"))
+                if (FenSubsections[2].Contains("Q"))
                 {
-                    hasRookMoved_queenside_white = true;
+                    hasRookMoved_queenside_white = false;
                 }
                 
-                if (!FenSubsections[2].Contains("k"))
+                if (FenSubsections[2].Contains("k"))
                 {
-                    hasRookMoved_kingside_black = true;
+                    hasRookMoved_kingside_black = false;
                 }
 
-                if (!FenSubsections[2].Contains("q"))
+                if (FenSubsections[2].Contains("q"))
                 {
-                    hasRookMoved_queenside_black = true;
+                    hasRookMoved_queenside_black = false;
                 }
             }
+
 
             //En Passant pawn
             if (FenSubsections[3] != "-")
@@ -458,7 +471,6 @@ namespace Chess
                     pawnToEnPassant = ChessNotationToIndex(FenSubsections[3]) + 8;
                 }
             }
-            
 
             //Move Count
             moveCounter = Int32.Parse(FenSubsections[4]) + Int32.Parse(FenSubsections[5]);
@@ -488,8 +500,6 @@ namespace Chess
             materialCombinations.Add(new List<char> { 'K', 'B', 'k', 'b' });
             materialCombinations.Add(new List<char> { 'K', 'N', 'k', 'n' });
             materialCombinations.Add(new List<char> { 'K', 'R', 'k', 'r' });
-            materialCombinations.Add(new List<char> { 'K', 'R', 'k', 'n' });
-            materialCombinations.Add(new List<char> { 'K', 'R', 'k', 'b' });
             materialCombinations.Add(new List<char> { 'K', 'N', 'k', 'r' });
             materialCombinations.Add(new List<char> { 'K', 'B', 'k', 'r' });
             materialCombinations.Add(new List<char> { 'K', 'N', 'N', 'k' });

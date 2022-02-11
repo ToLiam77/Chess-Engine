@@ -31,8 +31,7 @@ namespace Chess
 
     private void Form1_Load(object sender, EventArgs e)
         {
-            //ChessBoard.setupBoardFEN("6bk/8/8/8/8/8/8/KQ6 w - - 0 16");
-            ChessBoard.setupBoardFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 1 1");
+            ChessBoard.setupBoardFEN("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
 
             int n = 8;
             Tile = new PictureBox[n, n];
@@ -165,6 +164,9 @@ namespace Chess
                                     }
                                 }
 
+                                //Print Current Evaluation
+                                BoardEvaluation.getBoardEvaluation();
+
                                 //Generate a response
                                 if (!ChessBoard.GameOver)
                                 {
@@ -190,6 +192,11 @@ namespace Chess
                                                 this.Close();
                                             }
                                         }
+
+
+                                        //Print Current Evaluation
+                                        BoardEvaluation.getBoardEvaluation();
+
                                     }
                                 }
                                 
