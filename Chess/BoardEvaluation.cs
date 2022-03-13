@@ -9,9 +9,34 @@ namespace Chess
     {
         public static float Evaluation = 0;
 
-        public static void getBoardEvaluation()
+        public static float getBoardEvaluation()
         {
             Evaluation = 0;
+
+            //CHECK FOR CHECKMATE / STALEMATE
+            if (Piece.getAttackedSquares(ChessBoard.playerTurn).Count == 0){
+
+                //Checkmate
+                if (Piece.getAttackedSquares(ChessBoard.getOppositeColor(ChessBoard.playerTurn)).Contains(ChessBoard.getOppositeColor(ChessBoard.playerTurn)))
+                {
+                    switch (ChessBoard.playerTurn)
+                    {
+                        case 'w':
+                            Evaluation = -99999;
+                            break;
+
+                        case 'b':
+                            Evaluation = 99999;
+                            break;
+                    }
+                }
+                //Stalemate
+                else
+                {
+                    Evaluation = 0;
+                }
+                
+            }
 
             //COUNT PIECE VALUES
             for (int i = 0; i < 8; i++)
@@ -64,24 +89,40 @@ namespace Chess
                 }
             }
 
-            //CHECK FOR CHECKMATE / STALEMATE
-            if (ChessBoard.GameOver)
+
+
+            //POSITIONAL (legal moves count)
+            float posRatio = 0.03f;
+
+            int[,] heatMapCenter = new int[,]
             {
-                if (ChessBoard.GameResult.Contains("stalemate"))
-                {
-                    Evaluation = 0;
-                }
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 2, 2, 2, 2, 1, 1 },
+                {1, 1, 2, 3, 3, 2, 1, 1 },
+                {1, 1, 2, 3, 3, 2, 1, 1 },
+                {1, 1, 2, 2, 2, 2, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 }
+            };
 
-                if (ChessBoard.GameResult.Contains("checkmate"))
-                {
-
-                }
+            List<int> AttackedSquaresWhite = Piece.getAttackedSquares('w');
+            for (int i = 0; i < AttackedSquaresWhite.Count; i++)
+            {
+                Evaluation += posRatio * heatMapCenter[8 - ChessBoard.getRank(AttackedSquaresWhite[i]), ChessBoard.getFile(AttackedSquaresWhite[i]) - 1];
             }
-            
+
+            List<int> AttackedSquaresBlack = Piece.getAttackedSquares('b');
+            for (int i = 0; i < AttackedSquaresBlack.Count; i++)
+            {
+                Evaluation += -posRatio * heatMapCenter[8 - ChessBoard.getRank(AttackedSquaresBlack[i]), ChessBoard.getFile(AttackedSquaresBlack[i]) - 1];
+            }
+
 
 
 
             //Debug.WriteLine(Evaluation);
+            return Evaluation;
         }
     }
 }

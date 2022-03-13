@@ -31,7 +31,7 @@ namespace Chess
 
     private void Form1_Load(object sender, EventArgs e)
         {
-            ChessBoard.setupBoardFEN("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+            //ChessBoard.setupBoardFEN("8/8/8/8/8/p7/rk3PPP/6K1 w - - 0 1");
 
             int n = 8;
             Tile = new PictureBox[n, n];
@@ -173,7 +173,7 @@ namespace Chess
                                     if (MoveGeneration.playingVsAI)
                                     {
                                         SetBaseColors();
-                                        MoveGeneration.generateRandomMove();
+                                        MoveGeneration.generateMove();
                                         previousMove_From = Tile[8 - ChessBoard.getRank(MoveGeneration.moveIndex_From), ChessBoard.getFile(MoveGeneration.moveIndex_From) - 1];              
                                         previousMove_To = Tile[8 - ChessBoard.getRank(MoveGeneration.moveIndex_To), ChessBoard.getFile(MoveGeneration.moveIndex_To) - 1];
                                         SetupBoard();

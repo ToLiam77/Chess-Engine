@@ -81,9 +81,6 @@ namespace Chess
                         pawnToEnPassant = targetIndex;
 
                     }
-
-                    //Debug.WriteLine("targetindex = " + targetIndex);
-                    //Debug.WriteLine("pawn to en passant = " + pawnToEnPassant);
                 }
 
                 //En Passant
