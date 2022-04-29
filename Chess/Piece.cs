@@ -9,9 +9,9 @@ namespace Chess
     public class Piece
     {
 
+        //Pseudo-legal moves
         public static List<int> AvailableMovesNoFilter(char pieceType, int pieceIndex)
         {
-            //ChessBoard chessBoard = new ChessBoard();
             List<int> MoveList = new List<int>();
 
             int PieceRank = ChessBoard.getRank(pieceIndex);
@@ -664,7 +664,58 @@ namespace Chess
 
             ChessBoard.validatingMoves = false;
             return filteredMoveList;
-            //return MoveList;
+        }
+
+
+        //Used for quiescence search
+        public static List<int> AvailableCaptureMoves(char pieceType, int pieceIndex)
+        {
+            List<int> MoveList = AvailableMovesNoFilter(pieceType, pieceIndex);
+            List<int> CaptureMoveList = new List<int>();
+            List<int> filteredMoveList = new List<int>();
+
+
+            Char color = ' ';
+            if (Char.IsLower(pieceType))
+            {
+                color = 'b';
+            }
+            else if (char.IsUpper(pieceType))
+            {
+                color = 'w';
+            }
+            char oppositeColour = getOppositeColor(pieceType);
+
+
+
+            char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
+
+            //Remove non capture moves
+            for (int i = 0; i < MoveList.Count; i++)
+            {
+                if (ChessBoard.getPieceAtIndex(i) != '0')
+                {
+                    CaptureMoveList.Add(MoveList[i]);
+                }
+            }
+
+            //Filter legal moves
+            for (int i = 0; i < CaptureMoveList.Count; i++)
+            {
+                ChessBoard.validatingMoves = true;
+                ChessBoard.updateChessBoard(pieceIndex, CaptureMoveList[i]);
+
+                List<int> opponentResponses = getAttackedSquares(oppositeColour);
+                if (!opponentResponses.Contains(ChessBoard.getKingLocation(color)))
+                {
+                    filteredMoveList.Add(CaptureMoveList[i]);
+                }
+
+                ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
+            }
+
+            ChessBoard.validatingMoves = false;
+            return filteredMoveList;
         }
 
         public static List<int> getAttackedSquares(char color)
@@ -748,7 +799,6 @@ namespace Chess
                 }
 
             }
-
 
 
             ChessBoard.playerTurn = OriginalPlayerTurn;

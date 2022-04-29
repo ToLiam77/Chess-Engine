@@ -31,21 +31,26 @@ namespace Chess
 
     private void Form1_Load(object sender, EventArgs e)
         {
-            //ChessBoard.setupBoardFEN("8/8/8/8/8/p7/rk3PPP/6K1 w - - 0 1");
+            //Select Game mode
+            ModePicker pickMode = new ModePicker();
+            pickMode.ShowDialog();
 
-            int n = 8;
-            Tile = new PictureBox[n, n];
-            int left = 2, top = 2;
 
             //Colors
-            var dark = Color.DarkSeaGreen; 
+            var dark = Color.DarkSeaGreen;
             var white = Color.Honeydew;
 
-            var dark_MoveIndicator = ColorTranslator.FromHtml("#b8db67"); //Color.Goldenrod;
-            var white_MoveIndicator = ColorTranslator.FromHtml("#faff78"); //Color.Gold;
+            var dark_MoveIndicator = ColorTranslator.FromHtml("#b8db67");
+            var white_MoveIndicator = ColorTranslator.FromHtml("#faff78");
 
             var dark_OptionIndicator = Color.Tan;
             var white_OptionIndicator = Color.Wheat;
+
+
+            //Drawing chessboard
+            int n = 8;
+            Tile = new PictureBox[n, n];
+            int left = 2, top = 2;
 
 
             Color[] colors = new Color[2];
@@ -123,6 +128,9 @@ namespace Chess
                                             PromotionPiecePicker promotionPiece = new PromotionPiecePicker();
                                             ChessBoard.waitingForPromotionResponse = true;
                                             promotionPiece.ShowDialog();
+
+                                            previousMove_From = selectedPiece;
+                                            previousMove_To = clickedTile;
                                             SetupBoard();
                                         }
                                         break;
@@ -135,6 +143,9 @@ namespace Chess
                                             PromotionPiecePicker promotionPiece = new PromotionPiecePicker();
                                             ChessBoard.waitingForPromotionResponse = true;
                                             promotionPiece.ShowDialog();
+
+                                            previousMove_From = selectedPiece;
+                                            previousMove_To = clickedTile;
                                             SetupBoard();
                                         }
                                         break;
@@ -164,9 +175,6 @@ namespace Chess
                                     }
                                 }
 
-                                //Print Current Evaluation
-                                BoardEvaluation.getBoardEvaluation();
-
                                 //Generate a response
                                 if (!ChessBoard.GameOver)
                                 {
@@ -194,9 +202,6 @@ namespace Chess
                                         }
 
 
-                                        //Print Current Evaluation
-                                        BoardEvaluation.getBoardEvaluation();
-
                                     }
                                 }
                                 
@@ -205,7 +210,7 @@ namespace Chess
                         }
 
 
-                        //Piece available moves displayed
+                        //Piece previous move displayed
                         SetBaseColors();
                         if (previousMove_From != null)
                         {
@@ -227,12 +232,10 @@ namespace Chess
                                 previousMove_To.BackColor = dark_MoveIndicator;
                             }
 
-                            //previousMove_To.BackColor = Color.DarkRed;
                         }
-                        
 
-                        //Tile[5, 5].BackColor = Color.DarkRed;
 
+                        //Piece available moves displayed
                         List<int> AvailableMovesList = Piece.AvailableMoves(ChessBoard.getPieceAtIndex(PieceIndex), PieceIndex);
 
                         if (AvailableMovesList != null && !wasMoveMade)
@@ -327,8 +330,8 @@ namespace Chess
         public void SetBaseColors()
         {
             Color[] colors = new Color[2];
-            var dark = Color.DarkSeaGreen; //Color.Black; 
-            var white = Color.Honeydew; //Color.White;
+            var dark = Color.DarkSeaGreen;
+            var white = Color.Honeydew;
 
             int n = 8;
             for (int i = 0; i < n; i++)

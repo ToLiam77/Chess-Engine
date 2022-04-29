@@ -13,31 +13,6 @@ namespace Chess
         {
             Evaluation = 0;
 
-            //CHECK FOR CHECKMATE / STALEMATE
-            if (Piece.getAttackedSquares(ChessBoard.playerTurn).Count == 0){
-
-                //Checkmate
-                if (Piece.getAttackedSquares(ChessBoard.getOppositeColor(ChessBoard.playerTurn)).Contains(ChessBoard.getOppositeColor(ChessBoard.playerTurn)))
-                {
-                    switch (ChessBoard.playerTurn)
-                    {
-                        case 'w':
-                            Evaluation = -99999;
-                            break;
-
-                        case 'b':
-                            Evaluation = 99999;
-                            break;
-                    }
-                }
-                //Stalemate
-                else
-                {
-                    Evaluation = 0;
-                }
-                
-            }
-
             //COUNT PIECE VALUES
             for (int i = 0; i < 8; i++)
             {
@@ -121,7 +96,24 @@ namespace Chess
 
 
 
-            //Debug.WriteLine(Evaluation);
+            //KING CASTLING ENCOURAGEMENT
+            int[,] kingPositionMap = new int[,]
+            {
+                {1, 1, 2, 1, 1, 1, 2, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 2, 1, 1, 1, 2, 1 }
+            };
+
+            Evaluation += 0.3f * kingPositionMap[8 - ChessBoard.getRank(ChessBoard.getKingLocation('w')), ChessBoard.getFile(ChessBoard.getKingLocation('w')) - 1];
+            Evaluation -= 0.3f * kingPositionMap[8 - ChessBoard.getRank(ChessBoard.getKingLocation('b')), ChessBoard.getFile(ChessBoard.getKingLocation('b')) - 1];
+
+
+
             return Evaluation;
         }
     }

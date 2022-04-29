@@ -8,14 +8,14 @@ namespace Chess
 {
     internal class MoveGeneration
     {
-        public static bool playingVsAI = true;
+        public static bool playingVsAI = false;
 
         public static int moveIndex_From;
         public static int moveIndex_To;
 
-        //moveIndex_From;
-        //moveIndex_To;
+        public static int SearchDepth = 3;
 
+        //Random move generation used for testing
         public static void generateRandomMove()
         {
             //GET LIST OF AVAILABLE PIECE INDEXES
@@ -62,7 +62,7 @@ namespace Chess
 
             int targetIndex = AvailableMoves[random.Next(AvailableMoves.Count)];
 
-            //Pawn promotion case
+            //Pawn promotion case (pick random promotion)
             switch (ChessBoard.getPieceAtIndex(pieceToMove))
             {
                 case 'p':
@@ -88,8 +88,7 @@ namespace Chess
             ChessBoard.updateChessBoard(pieceToMove, targetIndex);
         }
 
-
-
+        
         public static void generateMove()
         {
             //Show loading icon on mouse when waiting for move
@@ -99,71 +98,29 @@ namespace Chess
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
+            //Count number of pieces for dynamic depth
+            List<int> AvailablePiecesWhite = getAvailablePieces('w');
+            List<int> AvailablePiecesBlack = getAvailablePieces('b');
+            int pieceCount = AvailablePiecesWhite.Count + AvailablePiecesBlack.Count;
+            if (pieceCount < 10) SearchDepth = 5;
 
-            //Debug.WriteLine(Search(3, float.NegativeInfinity, float.PositiveInfinity, true));
-
-
-            int depthSearch = 3;
-            Debug.WriteLine(Search2(depthSearch, -1000, 1000));
-
-
-            if (ChessBoard.playerTurn == 'b')
-            {
-                //Debug.WriteLine(Search2(depthSearch, float.NegativeInfinity, float.PositiveInfinity));
-            }
-            else
-            {
-                //Debug.WriteLine(-Search2(depthSearch, float.NegativeInfinity, float.PositiveInfinity));
-            }
-
-
-            
-
-
+            //Find and execute move
+            SelectMove(SearchDepth);
 
 
             stopWatch.Stop();
+            Debug.WriteLine("Move Selected Was " + moveIndex_From + " to " + moveIndex_To);
             Debug.WriteLine("Time taken: " + stopWatch.ElapsedMilliseconds + " millisecons");
 
 
-            //ChessBoard.updateChessBoard(moveIndex_From, moveIndex_To);
+            ChessBoard.updateChessBoard(moveIndex_From, moveIndex_To);
 
         }
 
 
-
-
-        public static void SearchNode()
+        public static void SelectMove(int depth)
         {
-            //GET LIST OF AVAILABLE PIECE INDEXES
-            List<int> AvailablePieces = getAvailablePieces(ChessBoard.playerTurn);
-            //Get Number of possible Moves
-            List<List<int>> AvailableMoves = getPieceMoves(AvailablePieces);
-
-            float bestNode = 0;
-
-            for (int i = 0; i < AvailablePieces.Count; i++)
-            {
-                for (int j = 0; j < AvailableMoves[i].Count; j++)
-                {
-
-                }
-
-            }
-
-        }
-
-
-
-
-
-
-        public static float Search2(int depth, float alpha, float beta)
-        {
-            if (depth == 0)
-            {
-                return BoardEvaluation.getBoardEvaluation();
-            }
+            char playerTurn = ChessBoard.playerTurn;
 
 
             //GET LIST OF AVAILABLE PIECE INDEXES
@@ -172,16 +129,16 @@ namespace Chess
             List<List<int>> AvailableMoves = getPieceMoves(AvailablePieces);
 
 
-
-            int pieceToMove = 0;
-            int targetIndex = 0;
-            //float bestEvaluation = 0;
-
+            //Select most favourable move
+            float bestScore = float.PositiveInfinity;
 
             for (int i = 0; i < AvailablePieces.Count; i++)
             {
                 for (int j = 0; j < AvailableMoves[i].Count; j++)
                 {
+                    Debug.WriteLine("Analyzing move " + AvailablePieces[i] + " to " + AvailableMoves[i][j]);
+
+
                     #region Pawn promotion case
                     //Pawn promotion case
                     if (ChessBoard.getPieceAtIndex(AvailablePieces[i]) == 'P' && ChessBoard.getRank(AvailableMoves[i][j]) == 8)
@@ -213,9 +170,20 @@ namespace Chess
                             ChessBoard.promotionPiece = promoteOptions[k];
                             ChessBoard.validatingMoves = true;
                             ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
+
+                            ChessBoard.changePlayerTurn();
                             ChessBoard.validatingMoves = false;
 
-                            float evaluation = -Search2(depth - 1, -beta, -alpha);
+                            float score = Search(depth - 1, float.NegativeInfinity, float.PositiveInfinity, true);
+                            Debug.WriteLine("Score promotion " + promoteOptions[k] + ": " + score);
+
+                            if (score < bestScore)
+                            {
+                                bestPromotion = promoteOptions[k];
+                                bestScore = score;
+                                moveIndex_From = AvailablePieces[i];
+                                moveIndex_To = AvailableMoves[i][j];
+                            }
 
                             #region Restore State
                             ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
@@ -233,14 +201,6 @@ namespace Chess
                             ChessBoard.EnPassantAvailable = EnPassantAvailable;
                             ChessBoard.pawnToEnPassant = pawnToEnPassant;
                             #endregion
-
-                            if (evaluation >= beta)
-                            {
-                                //Prune branch
-                                return beta;
-                            }
-                            alpha = Math.Max(alpha, evaluation);
-                            bestPromotion = promoteOptions[k];
 
                         }
                         ChessBoard.promotionPiece = bestPromotion;
@@ -274,9 +234,226 @@ namespace Chess
                             ChessBoard.promotionPiece = promoteOptions[k];
                             ChessBoard.validatingMoves = true;
                             ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
+                            ChessBoard.changePlayerTurn();
                             ChessBoard.validatingMoves = false;
 
-                            float evaluation = -Search2(depth - 1, -beta, -alpha);
+                            float score = Search(depth - 1, float.NegativeInfinity, float.PositiveInfinity, true);
+                            Debug.WriteLine("Score promotion " + promoteOptions[k] + ": " + score);
+
+                            if (score < bestScore)
+                            {
+                                bestPromotion = promoteOptions[k];
+                                bestScore = score;
+                                moveIndex_From = AvailablePieces[i];
+                                moveIndex_To = AvailableMoves[i][j];
+                            }
+
+                            #region Restore State
+                            ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
+
+
+                            //Reset Casling values
+                            ChessBoard.hasKingMoved_white = castlingRights[0];
+                            ChessBoard.hasKingMoved_black = castlingRights[1];
+                            ChessBoard.hasRookMoved_queenside_white = castlingRights[2];
+                            ChessBoard.hasRookMoved_kingside_white = castlingRights[3];
+                            ChessBoard.hasRookMoved_queenside_black = castlingRights[4];
+                            ChessBoard.hasRookMoved_kingside_black = castlingRights[5];
+
+                            //Reset En Passant Values
+                            ChessBoard.EnPassantAvailable = EnPassantAvailable;
+                            ChessBoard.pawnToEnPassant = pawnToEnPassant;
+                            #endregion
+
+                        }
+                        ChessBoard.promotionPiece = bestPromotion;
+                    }
+                    #endregion
+                    else
+                    {
+                        #region Save State
+                        //Save Casling values
+                        bool[] castlingRights = new bool[]
+                        {
+                        ChessBoard.hasKingMoved_white,
+                        ChessBoard.hasKingMoved_black,
+                        ChessBoard.hasRookMoved_queenside_white,
+                        ChessBoard.hasRookMoved_kingside_white,
+                        ChessBoard.hasRookMoved_queenside_black,
+                        ChessBoard.hasRookMoved_kingside_black
+                        };
+
+                        //Save En Passant Values
+                        bool EnPassantAvailable = ChessBoard.EnPassantAvailable;
+                        int pawnToEnPassant = ChessBoard.pawnToEnPassant;
+
+
+                        char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
+                        #endregion
+                        ChessBoard.validatingMoves = true;
+                        ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
+                        ChessBoard.changePlayerTurn();
+                        ChessBoard.validatingMoves = false;
+
+                        float score = Search(depth - 1, float.NegativeInfinity, float.PositiveInfinity, true);
+                        
+                        Debug.WriteLine("Score: " + score);
+
+                        if (score < bestScore)
+                        {
+                            bestScore = score;
+                            moveIndex_From = AvailablePieces[i];
+                            moveIndex_To = AvailableMoves[i][j];
+                        }
+
+                        #region Restore State
+                        ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
+
+
+                        //Reset Casling values
+                        ChessBoard.hasKingMoved_white = castlingRights[0];
+                        ChessBoard.hasKingMoved_black = castlingRights[1];
+                        ChessBoard.hasRookMoved_queenside_white = castlingRights[2];
+                        ChessBoard.hasRookMoved_kingside_white = castlingRights[3];
+                        ChessBoard.hasRookMoved_queenside_black = castlingRights[4];
+                        ChessBoard.hasRookMoved_kingside_black = castlingRights[5];
+
+                        //Reset En Passant Values
+                        ChessBoard.EnPassantAvailable = EnPassantAvailable;
+                        ChessBoard.pawnToEnPassant = pawnToEnPassant;
+                        #endregion
+
+                    }
+
+                    Debug.WriteLine("------------------------");
+
+                }
+            }
+
+
+            ChessBoard.playerTurn = playerTurn;
+
+        }
+
+
+        //Quiescence search
+        public static float SearchCaptureMoves(float alpha, float beta)
+        {
+            float evaluation = BoardEvaluation.getBoardEvaluation();
+            if (evaluation >= beta)
+            {
+                return beta;
+            }
+            alpha = Math.Min(alpha,evaluation);
+
+
+            //GET LIST OF AVAILABLE PIECE INDEXES
+            List<int> AvailablePieces = getAvailablePieces(ChessBoard.playerTurn);
+            //Get Number of possible capture Moves
+            List<List<int>> AvailableCaptureMoves = getPieceCaptureMoves(AvailablePieces);
+
+
+
+
+            for (int i = 0; i < AvailablePieces.Count; i++)
+            {
+                for (int j = 0; j < AvailableCaptureMoves[i].Count; j++)
+                {
+                    #region Pawn promotion case
+                    //Pawn promotion case
+                    if (ChessBoard.getPieceAtIndex(AvailablePieces[i]) == 'P' && ChessBoard.getRank(AvailableCaptureMoves[i][j]) == 8)
+                    {
+                        char[] promoteOptions = { 'Q', 'R', 'B', 'N' };
+                        char bestPromotion = ' ';
+                        for (int k = 0; k < 4; k++)
+                        {
+                            #region Save State
+                            //Save Casling values
+                            bool[] castlingRights = new bool[]
+                            {
+                                ChessBoard.hasKingMoved_white,
+                                ChessBoard.hasKingMoved_black,
+                                ChessBoard.hasRookMoved_queenside_white,
+                                ChessBoard.hasRookMoved_kingside_white,
+                                ChessBoard.hasRookMoved_queenside_black,
+                                ChessBoard.hasRookMoved_kingside_black
+                            };
+
+                            //Save En Passant Values
+                            bool EnPassantAvailable = ChessBoard.EnPassantAvailable;
+                            int pawnToEnPassant = ChessBoard.pawnToEnPassant;
+
+
+                            char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
+                            #endregion
+
+                            ChessBoard.promotionPiece = promoteOptions[k];
+                            ChessBoard.validatingMoves = true;
+                            ChessBoard.updateChessBoard(AvailablePieces[i], AvailableCaptureMoves[i][j]);
+                            ChessBoard.validatingMoves = false;
+
+                            evaluation = -SearchCaptureMoves(-beta, -alpha);
+
+                            #region Restore State
+                            ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
+
+
+                            //Reset Casling values
+                            ChessBoard.hasKingMoved_white = castlingRights[0];
+                            ChessBoard.hasKingMoved_black = castlingRights[1];
+                            ChessBoard.hasRookMoved_queenside_white = castlingRights[2];
+                            ChessBoard.hasRookMoved_kingside_white = castlingRights[3];
+                            ChessBoard.hasRookMoved_queenside_black = castlingRights[4];
+                            ChessBoard.hasRookMoved_kingside_black = castlingRights[5];
+
+                            //Reset En Passant Values
+                            ChessBoard.EnPassantAvailable = EnPassantAvailable;
+                            ChessBoard.pawnToEnPassant = pawnToEnPassant;
+                            #endregion
+
+                            if (evaluation >= beta)
+                            {
+                                //Prune branch
+                                return beta;
+                            }
+                            alpha = Math.Max(alpha, evaluation);
+                            bestPromotion = promoteOptions[k];
+
+                        }
+                        ChessBoard.promotionPiece = bestPromotion;
+                    }
+                    else if (ChessBoard.getPieceAtIndex(AvailablePieces[i]) == 'p' && ChessBoard.getRank(AvailableCaptureMoves[i][j]) == 1)
+                    {
+                        char[] promoteOptions = { 'q', 'r', 'b', 'n' };
+                        char bestPromotion = ' ';
+                        for (int k = 0; k < 4; k++)
+                        {
+                            #region Save State
+                            //Save Casling values
+                            bool[] castlingRights = new bool[]
+                            {
+                                ChessBoard.hasKingMoved_white,
+                                ChessBoard.hasKingMoved_black,
+                                ChessBoard.hasRookMoved_queenside_white,
+                                ChessBoard.hasRookMoved_kingside_white,
+                                ChessBoard.hasRookMoved_queenside_black,
+                                ChessBoard.hasRookMoved_kingside_black
+                            };
+
+                            //Save En Passant Values
+                            bool EnPassantAvailable = ChessBoard.EnPassantAvailable;
+                            int pawnToEnPassant = ChessBoard.pawnToEnPassant;
+
+
+                            char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
+                            #endregion
+
+                            ChessBoard.promotionPiece = promoteOptions[k];
+                            ChessBoard.validatingMoves = true;
+                            ChessBoard.updateChessBoard(AvailablePieces[i], AvailableCaptureMoves[i][j]);
+                            ChessBoard.validatingMoves = false;
+
+                            evaluation = -SearchCaptureMoves(-beta, -alpha);
 
                             #region Restore State
                             ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
@@ -329,10 +506,10 @@ namespace Chess
                         char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
                         #endregion
                         ChessBoard.validatingMoves = true;
-                        ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
+                        ChessBoard.updateChessBoard(AvailablePieces[i], AvailableCaptureMoves[i][j]);
                         ChessBoard.validatingMoves = false;
 
-                        float evaluation = -Search2(depth - 1, -beta, -alpha);
+                        float evaluationScore = -SearchCaptureMoves(-beta, -alpha);
 
                         #region Restore State
                         ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
@@ -351,36 +528,23 @@ namespace Chess
                         ChessBoard.pawnToEnPassant = pawnToEnPassant;
                         #endregion
 
-                        if (evaluation >= beta)
+                        if (evaluationScore >= beta)
                         {
                             //Prune branch
                             return beta;
                         }
-                        alpha = Math.Max(alpha, evaluation);
-
-
-                        //pieceToMove = AvailablePieces[i];
-                        //targetIndex = AvailableMoves[i][j];
-                        //moveIndex_From = pieceToMove;
-                        //moveIndex_To = targetIndex;
+                        alpha = Math.Max(alpha, evaluationScore);
 
                     }
 
                 }
             }
 
-            //Debug.WriteLine(pieceToMove + ",  " + targetIndex);
-            //Debug.WriteLine(",  " + alpha);
-
-            //moveIndex_From = pieceToMove;
-            //moveIndex_To = targetIndex;
-
             return alpha;
 
+
+
         }
-
-
-
 
 
 
@@ -390,6 +554,8 @@ namespace Chess
             if (depth == 0)
             {
                 return BoardEvaluation.getBoardEvaluation();
+                //Quiescence search not used due to reduced performance
+                //SearchCaptureMoves(alpha, beta);
             }
 
 
@@ -400,9 +566,39 @@ namespace Chess
 
 
 
-            int pieceToMove = ' ';
-            int targetIndex = 0;
-            //float bestEvaluation = 0;
+            //CHECK FOR CHECKMATE / STALEMATE
+            int numberOfMoves = 0;
+            for (int i = 0; i < AvailablePieces.Count; i++)
+            {
+                for (int j = 0; j < AvailableMoves[i].Count; j++)
+                {
+                    numberOfMoves++;
+                }
+            }
+
+            if (numberOfMoves == 0)
+            {
+                //Checkmate
+                if (Piece.getAttackedSquares(ChessBoard.getOppositeColor(ChessBoard.playerTurn)).Contains(ChessBoard.getKingLocation(ChessBoard.playerTurn)))
+                {
+                    switch (ChessBoard.playerTurn)
+                    {
+                        case 'w':
+                            return float.NegativeInfinity;
+
+                        case 'b':
+                            return float.PositiveInfinity;
+                    }
+                }
+                //Stalemate
+                else
+                {
+                    return 0;
+                }
+
+            }
+
+
 
             //White moves
             if (maximizingPlayer)
@@ -452,8 +648,6 @@ namespace Chess
                                 {
                                     bestPromotion = promoteOptions[k];
                                     maxEvaluation = evaluation;
-                                    pieceToMove = AvailablePieces[i];
-                                    targetIndex = AvailableMoves[i][j];
                                 }
 
                                 #region Restore State
@@ -472,7 +666,15 @@ namespace Chess
                                 ChessBoard.EnPassantAvailable = EnPassantAvailable;
                                 ChessBoard.pawnToEnPassant = pawnToEnPassant;
                                 #endregion
-                                //ChessBoard.changePlayerTurn();
+
+                                beta = Math.Min(beta, evaluation);
+
+                                if (beta <= alpha)
+                                {
+                                    //Prune branch
+                                    break;
+                                }
+
                             }
                             ChessBoard.promotionPiece = bestPromotion;
                         }
@@ -514,8 +716,6 @@ namespace Chess
                                 {
                                     bestPromotion = promoteOptions[k];
                                     maxEvaluation = evaluation;
-                                    pieceToMove = AvailablePieces[i];
-                                    targetIndex = AvailableMoves[i][j];
                                 }
 
                                 #region Restore State
@@ -534,7 +734,15 @@ namespace Chess
                                 ChessBoard.EnPassantAvailable = EnPassantAvailable;
                                 ChessBoard.pawnToEnPassant = pawnToEnPassant;
                                 #endregion
-                                //ChessBoard.changePlayerTurn();
+
+                                beta = Math.Min(beta, evaluation);
+
+                                if (beta <= alpha)
+                                {
+                                    //Prune branch
+                                    break;
+                                }
+
                             }
                             ChessBoard.promotionPiece = bestPromotion;
                         }
@@ -560,9 +768,11 @@ namespace Chess
 
                             char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
                             #endregion
+                            ChessBoard.playerTurn = 'w';
                             ChessBoard.validatingMoves = true;
                             ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
                             ChessBoard.validatingMoves = false;
+                            
 
                             float evaluation = Search(depth - 1, alpha, beta, false);
                             maxEvaluation = Math.Max(maxEvaluation, evaluation);
@@ -584,25 +794,21 @@ namespace Chess
                             ChessBoard.pawnToEnPassant = pawnToEnPassant;
                             #endregion
 
-                            //alpha = Math.Max(alpha, evaluation);
-                            if (evaluation > alpha)
-                            {
-                                alpha = evaluation;
-                                //moveIndex_From = AvailablePieces[i];
-                                //moveIndex_To = AvailableMoves[i][j];
-                            }
 
+                            alpha = Math.Max(alpha, evaluation);
 
                             if (beta <= alpha)
                             {
                                 //Prune branch
                                 break;
                             }
+                            
 
                         }
 
                     }
                 }
+
                 return maxEvaluation;
             }
             //Black moves
@@ -641,7 +847,7 @@ namespace Chess
 
                                 char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
                                 #endregion
-
+                                ChessBoard.playerTurn = 'b';
                                 ChessBoard.promotionPiece = promoteOptions[k];
                                 ChessBoard.validatingMoves = true;
                                 ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
@@ -653,8 +859,6 @@ namespace Chess
                                 {
                                     bestPromotion = promoteOptions[k];
                                     minEvaluation = evaluation;
-                                    pieceToMove = AvailablePieces[i];
-                                    targetIndex = AvailableMoves[i][j];
                                 }
 
                                 #region Restore State
@@ -673,7 +877,15 @@ namespace Chess
                                 ChessBoard.EnPassantAvailable = EnPassantAvailable;
                                 ChessBoard.pawnToEnPassant = pawnToEnPassant;
                                 #endregion
-                                //ChessBoard.changePlayerTurn();
+
+                                beta = Math.Min(beta, evaluation);
+
+                                if (beta <= alpha)
+                                {
+                                    //Prune branch
+                                    break;
+                                }
+
                             }
                             ChessBoard.promotionPiece = bestPromotion;
                         }
@@ -702,7 +914,7 @@ namespace Chess
 
                                 char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
                                 #endregion
-
+                                ChessBoard.playerTurn = 'b';
                                 ChessBoard.promotionPiece = promoteOptions[k];
                                 ChessBoard.validatingMoves = true;
                                 ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
@@ -715,8 +927,6 @@ namespace Chess
                                 {
                                     bestPromotion = promoteOptions[k];
                                     minEvaluation = evaluation;
-                                    pieceToMove = AvailablePieces[i];
-                                    targetIndex = AvailableMoves[i][j];
                                 }
 
                                 #region Restore State
@@ -735,7 +945,15 @@ namespace Chess
                                 ChessBoard.EnPassantAvailable = EnPassantAvailable;
                                 ChessBoard.pawnToEnPassant = pawnToEnPassant;
                                 #endregion
-                                //ChessBoard.changePlayerTurn();
+
+                                beta = Math.Min(beta, evaluation);
+
+                                if (beta <= alpha)
+                                {
+                                    //Prune branch
+                                    break;
+                                }
+
                             }
                             ChessBoard.promotionPiece = bestPromotion;
                         }
@@ -746,12 +964,12 @@ namespace Chess
                             //Save Casling values
                             bool[] castlingRights = new bool[]
                             {
-                        ChessBoard.hasKingMoved_white,
-                        ChessBoard.hasKingMoved_black,
-                        ChessBoard.hasRookMoved_queenside_white,
-                        ChessBoard.hasRookMoved_kingside_white,
-                        ChessBoard.hasRookMoved_queenside_black,
-                        ChessBoard.hasRookMoved_kingside_black
+                                ChessBoard.hasKingMoved_white,
+                                ChessBoard.hasKingMoved_black,
+                                ChessBoard.hasRookMoved_queenside_white,
+                                ChessBoard.hasRookMoved_kingside_white,
+                                ChessBoard.hasRookMoved_queenside_black,
+                                ChessBoard.hasRookMoved_kingside_black
                             };
 
                             //Save En Passant Values
@@ -761,13 +979,14 @@ namespace Chess
 
                             char[,] originalChessBoard = ChessBoard.chessBoard.Clone() as char[,];
                             #endregion
+                            ChessBoard.playerTurn = 'b';
                             ChessBoard.validatingMoves = true;
                             ChessBoard.updateChessBoard(AvailablePieces[i], AvailableMoves[i][j]);
                             ChessBoard.validatingMoves = false;
 
                             float evaluation = Search(depth - 1, alpha, beta, true);
                             minEvaluation = Math.Min(minEvaluation, evaluation);
-
+                            
                             #region Restore State
                             ChessBoard.chessBoard = originalChessBoard.Clone() as char[,];
 
@@ -785,42 +1004,24 @@ namespace Chess
                             ChessBoard.pawnToEnPassant = pawnToEnPassant;
                             #endregion
 
-                            //beta = Math.Min(beta, evaluation);
-                            if (evaluation < alpha)
-                            {
-                                alpha = evaluation;
-                                //moveIndex_From = AvailablePieces[i];
-                                //moveIndex_To = AvailableMoves[i][j];
-                            }
+                            
+                            beta = Math.Min(beta, evaluation);
 
                             if (beta <= alpha)
                             {
                                 //Prune branch
                                 break;
                             }
+
                         }
 
                     }
                     
                 }
+
                 return minEvaluation;
 
             }
-
-
-
-            
-
-            //Debug.WriteLine(bestEvaluation);
-
-            moveIndex_From = pieceToMove;
-            moveIndex_To = targetIndex;
-            //Debug.WriteLine(pieceToMove + " to " + targetIndex);
-
-            //Debug.WriteLine("REACHED??????????????????????????");
-            return 0;// bestEvaluation;
-
-
 
 
         }
@@ -862,6 +1063,7 @@ namespace Chess
         }
 
 
+        //All moves
         public static List<List<int>> getPieceMoves(List<int> AvailablePieces)
         {
             List<List<int>> AllAvailableMoves = new List<List<int>>();
@@ -875,5 +1077,19 @@ namespace Chess
 
         }
 
+
+        //Capture moves
+        public static List<List<int>> getPieceCaptureMoves(List<int> AvailablePieces)
+        {
+            List<List<int>> AllAvailableCaptureMoves = new List<List<int>>();
+
+            for (int i = 0; i < AvailablePieces.Count; i++)
+            {
+                AllAvailableCaptureMoves.Add(Piece.AvailableCaptureMoves(ChessBoard.getPieceAtIndex(AvailablePieces[i]), AvailablePieces[i]));
+            }
+
+            return AllAvailableCaptureMoves;
+
+        }
     }
 }

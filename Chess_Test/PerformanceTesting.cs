@@ -6,10 +6,10 @@ using System.Linq;
 using System.Diagnostics;
 
 
-namespace Chess_Test
+namespace PerformanceTesting
 {
     [TestClass]
-    public class ChessRulesTests
+    public class PerformanceTests
     {
         public static void countPossiblePositions(long[] NodesAtDepth, string FEN)
         {
@@ -44,6 +44,7 @@ namespace Chess_Test
             List<List<int>> AvailableMoves = getPieceMoves(AvailablePieces);
 
 
+            //Get number of possible positions at given depth
             for (int i = 0; i < AvailablePieces.Count; i++)
             {
                 for (int j = 0; j < AvailableMoves[i].Count; j++)
@@ -267,11 +268,10 @@ namespace Chess_Test
             string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 20, 400, 8902, 197281 }; //, 4865609 }; 119060324, 3195901860 };
 
 
-            //SetCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -281,11 +281,10 @@ namespace Chess_Test
             string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 48, 2039, 97862 }; //, 4085603, 193690690, 8031647685 };
 
 
-            //SetCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -295,11 +294,10 @@ namespace Chess_Test
             string FEN = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 14, 191, 2812, 43238, 674624 };
 
 
-            //SetCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -309,11 +307,10 @@ namespace Chess_Test
             string FEN = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 6, 264, 9467, 422333 };
 
 
-            //SetCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -323,11 +320,10 @@ namespace Chess_Test
             string FEN = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 44, 1486, 62379 };
 
 
-            //SetCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -337,11 +333,10 @@ namespace Chess_Test
             string FEN = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 ";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 46, 2079, 89890 };
 
 
-            //SetCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -351,11 +346,10 @@ namespace Chess_Test
             string FEN = "k7/p1p5/P1P5/8/8/7p/7P/4K2R w K - 0 1";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 8, 8, 98, 191, 2870};
 
 
-            //SaveCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 
@@ -365,11 +359,10 @@ namespace Chess_Test
             string FEN = "k1b5/1p1p1P2/pP1P4/P7/8/8/8/1K6 w - - 0 1";
             ChessBoard.setupBoardFEN(FEN);
 
-            //Nodes to expect at depths
+            //Nodes to expect at given depths
             long[] NodesAtDepth = { 9, 9, 103, 105, 1492, 1599, 26440, 35530 };
 
 
-            //SaveCastlingValues();
             countPossiblePositions(NodesAtDepth, FEN);
         }
 

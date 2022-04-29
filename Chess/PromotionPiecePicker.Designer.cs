@@ -37,6 +37,7 @@
             // btn_queen
             // 
             this.btn_queen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.btn_queen.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btn_queen.Location = new System.Drawing.Point(12, 12);
             this.btn_queen.Name = "btn_queen";
             this.btn_queen.Size = new System.Drawing.Size(90, 90);
@@ -47,6 +48,7 @@
             // btn_rook
             // 
             this.btn_rook.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.btn_rook.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btn_rook.Location = new System.Drawing.Point(108, 12);
             this.btn_rook.Name = "btn_rook";
             this.btn_rook.Size = new System.Drawing.Size(90, 90);
@@ -57,6 +59,7 @@
             // btn_bishop
             // 
             this.btn_bishop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.btn_bishop.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btn_bishop.Location = new System.Drawing.Point(12, 108);
             this.btn_bishop.Name = "btn_bishop";
             this.btn_bishop.Size = new System.Drawing.Size(90, 90);
@@ -67,6 +70,7 @@
             // btn_knight
             // 
             this.btn_knight.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.btn_knight.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btn_knight.Location = new System.Drawing.Point(108, 108);
             this.btn_knight.Name = "btn_knight";
             this.btn_knight.Size = new System.Drawing.Size(90, 90);
@@ -88,6 +92,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PromotionPiecePicker";
+            this.Opacity = 0.9D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Promotion piece";
             this.Load += new System.EventHandler(this.PromotionPiecePicker_Load);
