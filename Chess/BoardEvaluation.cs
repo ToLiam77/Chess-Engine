@@ -96,7 +96,7 @@ namespace Chess
 
 
 
-            //KING CASTLING ENCOURAGEMENT
+            //ENCOURAGE KING CASTLING 
             int[,] kingPositionMap = new int[,]
             {
                 {1, 1, 2, 1, 1, 1, 2, 1 },
@@ -111,6 +111,24 @@ namespace Chess
 
             Evaluation += 0.3f * kingPositionMap[8 - ChessBoard.getRank(ChessBoard.getKingLocation('w')), ChessBoard.getFile(ChessBoard.getKingLocation('w')) - 1];
             Evaluation -= 0.3f * kingPositionMap[8 - ChessBoard.getRank(ChessBoard.getKingLocation('b')), ChessBoard.getFile(ChessBoard.getKingLocation('b')) - 1];
+
+
+
+            //DISCOURAGE EARLY QUEEN MOVE
+            if (ChessBoard.moveCounter < 10)
+            {
+                //Black
+                if (ChessBoard.chessBoard[0, 3] != 'q')
+                {
+                    Evaluation += 0.3f;
+                }
+
+                //White
+                if (ChessBoard.chessBoard[7, 3] != 'Q')
+                {
+                    Evaluation -= 0.3f;
+                }
+            }
 
 
 
